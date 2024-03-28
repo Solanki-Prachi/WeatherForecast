@@ -2,7 +2,7 @@
 
 This API provides Weather Forecast for a certain location using its zip code 
 
-End point : http://localhost:8080/weather?zipcode=452001
+End point : http://localhost:8080/v1/weather?zipcode=452001
 
 Response: 
 
@@ -20,4 +20,6 @@ Response:
 
 
 Spring document link : http://localhost:8080/swagger-ui-custom.html
+
+HealthCheck : http://localhost:8080/actuator/heath
 
