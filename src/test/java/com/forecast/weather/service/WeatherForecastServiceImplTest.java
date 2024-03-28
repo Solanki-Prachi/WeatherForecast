@@ -1,16 +1,15 @@
 package com.forecast.weather.service;
 
-import com.forecast.weather.constants.WeatherForecastConstants;
+import com.forecast.weather.exception.InvalidZipcodeException;
 import com.forecast.weather.mapper.WeatherInformationMapper;
 import com.forecast.weather.model.*;
 import com.forecast.weather.service.impl.WeatherForecastServiceImpl;
-import com.github.benmanes.caffeine.cache.Cache;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCache;
@@ -62,13 +61,14 @@ public class WeatherForecastServiceImplTest {
         Mockito.when(cache.get(123456, WeatherInfo.class)).thenReturn(null);
         GeoLocation geoLocation = new GeoLocation("123456", "XYZ", 18.5685, 73.9158, "IN");
         ResponseEntity<GeoLocation> mockResponseEntity = new ResponseEntity<>(geoLocation, HttpStatus.OK);
-        Mockito.when(restTemplate.getForEntity("locationurl", GeoLocation.class)).thenReturn(mockResponseEntity);
 
+        Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(GeoLocation.class))).thenReturn(mockResponseEntity);
         WeatherForecast forecast = new WeatherForecast();
         forecast.setCoord(new Coord(123.45, 345.54));
         forecast.setWeather(Arrays.asList(new Weather(123, "Haze", "haze", "50nn")));
         ResponseEntity<WeatherForecast> mockWeatherForecast = new ResponseEntity<>(forecast, HttpStatus.OK);
-        Mockito.when(restTemplate.getForEntity("WeatherURL", WeatherForecast.class)).thenReturn(mockWeatherForecast);
+
+        Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(WeatherForecast.class))).thenReturn(mockWeatherForecast);
 
         Mockito.when(weatherInformationMapper.map(forecast, 123456, false)).thenReturn(weatherInfo);
 
@@ -76,5 +76,54 @@ public class WeatherForecastServiceImplTest {
 
         Assertions.assertEquals(false, weather.isCached());
         Assertions.assertEquals(300.0, weather.getTemperature());
+    }
+
+    @Test
+    public void getWeatherForecastWithInvalidZipCode() {
+
+        WeatherInfo weatherInfo = new WeatherInfo();
+        weatherInfo.setTemperature(300.0);
+        weatherInfo.setLocation("XYZ");
+        weatherInfo.setDescription("Cloudy");
+
+        Mockito.when(cacheManagerMock.getCache(Mockito.anyString())).thenReturn(cache);
+        Mockito.when(cache.get(123456, WeatherInfo.class)).thenReturn(null);
+        GeoLocation geoLocation = new GeoLocation("123456", "XYZ", 18.5685, 73.9158, "IN");
+        ResponseEntity<GeoLocation> mockResponseEntity = new ResponseEntity<>(geoLocation, HttpStatus.OK);
+
+        Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(GeoLocation.class))).thenThrow(InvalidZipcodeException.class);
+
+        Assertions.assertThrows(InvalidZipcodeException.class, () -> {
+            weatherForecastService.getWeatherInformation(123456);
+        });
+    }
+
+    @Test
+    public void getWeatherForecastNotFound() {
+
+        WeatherInfo weatherInfo = new WeatherInfo();
+        weatherInfo.setTemperature(300.0);
+        weatherInfo.setLocation("XYZ");
+        weatherInfo.setDescription("Cloudy");
+
+        Mockito.when(cacheManagerMock.getCache(Mockito.anyString())).thenReturn(cache);
+        Mockito.when(cache.get(123456, WeatherInfo.class)).thenReturn(null);
+        GeoLocation geoLocation = new GeoLocation("123456", "XYZ", 18.5685, 73.9158, "IN");
+        ResponseEntity<GeoLocation> mockResponseEntity = new ResponseEntity<>(geoLocation, HttpStatus.OK);
+
+        Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(GeoLocation.class))).thenReturn(mockResponseEntity);
+        WeatherForecast forecast = new WeatherForecast();
+        forecast.setCoord(new Coord(123.45, 345.54));
+        forecast.setWeather(Arrays.asList(new Weather(123, "Haze", "haze", "50nn")));
+        ResponseEntity<WeatherForecast> mockWeatherForecast = new ResponseEntity<>(forecast, HttpStatus.OK);
+
+        Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(WeatherForecast.class))).thenThrow(InvalidZipcodeException.class);
+
+        Mockito.when(weatherInformationMapper.map(forecast, 123456, false)).thenReturn(weatherInfo);
+
+
+        Assertions.assertThrows(InvalidZipcodeException.class, () -> {
+            weatherForecastService.getWeatherInformation(123456);
+        });
     }
 }

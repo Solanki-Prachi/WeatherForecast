@@ -2,8 +2,6 @@ package com.forecast.weather.model;
 
 import lombok.*;
 
-import java.util.Objects;
-
 @Getter
 @Setter
 @AllArgsConstructor

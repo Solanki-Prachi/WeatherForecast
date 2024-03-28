@@ -26,6 +26,12 @@ public class WeatherForecastServiceImpl implements WeatherForecastService {
     @Autowired
     private CacheManager cacheManager;
 
+    private RestTemplate restTemplate;
+
+    public WeatherForecastServiceImpl() {
+        this.restTemplate = new RestTemplate();
+    }
+
     /**
      * API to fetch weather forecast for given zipcode
      *
@@ -53,8 +59,7 @@ public class WeatherForecastServiceImpl implements WeatherForecastService {
 
     }
 
-    private static WeatherForecast getWeatherInformation(GeoLocation geoLocation) {
-        RestTemplate restTemplate = new RestTemplate();
+    private WeatherForecast getWeatherInformation(GeoLocation geoLocation) {
         ResponseEntity<WeatherForecast> response = null;
         try {
             response = restTemplate.getForEntity(getWeatherUrl(geoLocation), WeatherForecast.class);
@@ -84,7 +89,6 @@ public class WeatherForecastServiceImpl implements WeatherForecastService {
     }
 
     private GeoLocation getGeoLocation(Integer zipcode) {
-        RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<GeoLocation> response = null;
         try {
             response = restTemplate.getForEntity(getLocationUrl(zipcode), GeoLocation.class);
