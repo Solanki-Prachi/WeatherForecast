@@ -51,7 +51,7 @@ public class WeatherForecastServiceImpl implements WeatherForecastService {
             LOG.error("Zipcode Not Found.");
             throw new InvalidZipcodeException();
         }
-        WeatherForecast forecast = getWeatherInformation(geoLocation);
+        WeatherForecast forecast = getWeatherForecast(geoLocation);
         LOG.info("Weather Information retrived.");
         weatherInfo = weatherInformationMapper.map(forecast, zipcode, false);
         cacheManager.getCache(WeatherForecastConstants.WEATHER_FORECAST_CACHE).putIfAbsent(zipcode, weatherInfo);
@@ -59,7 +59,7 @@ public class WeatherForecastServiceImpl implements WeatherForecastService {
 
     }
 
-    private WeatherForecast getWeatherInformation(GeoLocation geoLocation) {
+    private WeatherForecast getWeatherForecast(GeoLocation geoLocation) {
         ResponseEntity<WeatherForecast> response = null;
         try {
             response = restTemplate.getForEntity(getWeatherUrl(geoLocation), WeatherForecast.class);

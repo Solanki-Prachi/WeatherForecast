@@ -35,8 +35,8 @@ public class WeatherForecastControllerTest {
 
     @Test
     public void getWeatherInfoByZipCodeFailure(){
-        Mockito.when(weatherForecastService.getWeatherInformation(123456)).thenThrow(new InvalidZipcodeException());
-        ResponseEntity<WeatherInfo> weather = weatherForecastController.getWeatherForecastByZipCode(123456);
+        Mockito.when(weatherForecastService.getWeatherInformation(123)).thenThrow(new InvalidZipcodeException());
+        ResponseEntity<WeatherInfo> weather = weatherForecastController.getWeatherForecastByZipCode(123);
         Assertions.assertEquals(HttpStatus.NOT_FOUND, weather.getStatusCode());
         Assertions.assertEquals(null, weather.getBody());
     }

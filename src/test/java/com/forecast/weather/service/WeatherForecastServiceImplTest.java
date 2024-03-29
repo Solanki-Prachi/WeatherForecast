@@ -94,7 +94,7 @@ public class WeatherForecastServiceImplTest {
         Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(GeoLocation.class))).thenThrow(InvalidZipcodeException.class);
 
         Assertions.assertThrows(InvalidZipcodeException.class, () -> {
-            weatherForecastService.getWeatherInformation(123456);
+            weatherForecastService.getWeatherInformation(123);
         });
     }
 
@@ -107,7 +107,7 @@ public class WeatherForecastServiceImplTest {
         weatherInfo.setDescription("Cloudy");
 
         Mockito.when(cacheManagerMock.getCache(Mockito.anyString())).thenReturn(cache);
-        Mockito.when(cache.get(123456, WeatherInfo.class)).thenReturn(null);
+        Mockito.when(cache.get(123, WeatherInfo.class)).thenReturn(null);
         GeoLocation geoLocation = new GeoLocation("123456", "XYZ", 18.5685, 73.9158, "IN");
         ResponseEntity<GeoLocation> mockResponseEntity = new ResponseEntity<>(geoLocation, HttpStatus.OK);
 
@@ -119,11 +119,11 @@ public class WeatherForecastServiceImplTest {
 
         Mockito.when(restTemplate.getForEntity(Mockito.anyString(), ArgumentMatchers.eq(WeatherForecast.class))).thenThrow(InvalidZipcodeException.class);
 
-        Mockito.when(weatherInformationMapper.map(forecast, 123456, false)).thenReturn(weatherInfo);
+        Mockito.when(weatherInformationMapper.map(forecast, 123, false)).thenReturn(weatherInfo);
 
 
         Assertions.assertThrows(InvalidZipcodeException.class, () -> {
-            weatherForecastService.getWeatherInformation(123456);
+            weatherForecastService.getWeatherInformation(123);
         });
     }
 }
